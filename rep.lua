@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 
--- Copyright (c) 2011 Rob Hoelz <rob@hoelz.ro>
+-- Copyright (c) 2011-2012 Rob Hoelz <rob@hoelz.ro>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy of
 -- this software and associated documentation files (the "Software"), to deal in
@@ -20,6 +20,16 @@
 
 -- Not as cool a name as re.pl, but I tried.
 
-local console = require 'repl.console'
+local repl          = require 'repl.console'
+local has_linenoise = pcall(require, 'linenoise')
 
-console:run()
+if has_linenoise then
+  repl:loadplugin 'linenoise'
+end
+
+repl:loadplugin 'history'
+repl:loadplugin 'completion'
+repl:loadplugin 'autoreturn'
+repl:loadplugin 'rcfile'
+
+repl:run()

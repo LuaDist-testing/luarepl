@@ -1,4 +1,4 @@
--- Copyright (c) 2011 Rob Hoelz <rob@hoelz.ro>
+-- Copyright (c) 2011-2012 Rob Hoelz <rob@hoelz.ro>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy of
 -- this software and associated documentation files (the "Software"), to deal in
@@ -30,9 +30,10 @@ local error     = error
 function sync_repl:run()
   self:prompt(1)
   for line in self:lines() do
-    local level = self:evaluate(line)
+    local level = self:handleline(line)
     self:prompt(level)
   end
+  self:shutdown()
 end
 
 --- Returns an iterator that yields lines to be evaluated.

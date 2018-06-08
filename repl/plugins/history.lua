@@ -16,41 +16,45 @@
 -- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 -- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
--- @class repl.console
---- This module implements a command line-based REPL,
---- similar to the standalone Lua interpreter.
+local history_file
 
-local sync_repl    = require 'repl.sync'
-local console_repl = sync_repl:clone()
-local stdout       = io.stdout
-local stdin        = io.stdin
-local print        = print
-local unpack       = unpack
-
--- @see repl:showprompt(prompt)
-function console_repl:showprompt(prompt)
-  stdout:write(prompt .. ' ')
-end
-
--- @see repl.sync:lines()
-function console_repl:lines()
-  return stdin:lines()
-end
-
--- @see repl:displayresults(results)
-function console_repl:displayresults(results)
-  if results.n == 0 then
+local function invokecallback(self, name, ...)
+  if not self._history_callbacks then
     return
   end
 
-  print(unpack(results, 1, results.n))
+  local impl = self._history_callbacks[name]
+  return impl(...)
 end
 
--- @see repl:displayerror(err)
-function console_repl:displayerror(err)
-  print(err)
+local function init()
+  if os.getenv 'HOME' then
+    history_file = os.getenv('HOME') .. '/.rep.lua.history'
+  end
 end
 
-console_repl._features.console = true
+-- XXX I don't know if this callback setup way
+--     is the best way to go about this (in fact
+--     I'm pretty sure it isn't), but I just need
+--     something that works right now.
+function repl:setuphistorycallbacks(callbacks)
+  self._history_callbacks = callbacks
 
-return console_repl
+  if history_file then
+    invokecallback(self, 'load', history_file)
+  end
+end
+
+function after:handleline(line)
+  invokecallback(self, 'addline', line)
+end
+
+function before:shutdown()
+  if history_file then
+    invokecallback(self, 'save', history_file)
+  end
+end
+
+features = 'history'
+
+init()
