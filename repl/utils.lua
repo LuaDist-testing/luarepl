@@ -16,14 +16,25 @@
 -- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 -- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
--- A plugin that causes the REPL to automatically return evaluation results
+local setfenv = setfenv or function(f, t)
+  local upvalue_index = 1
 
-function around:compilechunk(orig, chunk)
-  local f, err = orig(self, 'return ' .. chunk)
-
-  if not f then
-    f, err = orig(self, chunk)
+  -- XXX we may need a utility library if debug isn't available
+  while true do
+    local name = debug.getupvalue(f, upvalue_index)
+    -- some functions don't have an _ENV upvalue, because
+    -- they never refer to globals
+    if not name then
+      return
+    end
+    if name == '_ENV' then
+      debug.setupvalue(f, upvalue_index, t)
+      return
+    end
+    upvalue_index = upvalue_index + 1
   end
-
-  return f, err
 end
+
+return {
+  setfenv = setfenv,
+}

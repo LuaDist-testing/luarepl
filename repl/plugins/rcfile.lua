@@ -1,4 +1,4 @@
--- Copyright (c) 2011-2013 Rob Hoelz <rob@hoelz.ro>
+-- Copyright (c) 2011-2014 Rob Hoelz <rob@hoelz.ro>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy of
 -- this software and associated documentation files (the "Software"), to deal in
@@ -17,6 +17,8 @@
 -- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 -- A plugin that runs code in $HOME/.rep.lua before the REPL starts
+
+local setfenv = require('repl.utils').setfenv
 
 local function readable(filename)
   local f = io.open(filename, 'r')
@@ -41,7 +43,7 @@ local function init()
   end
 
   local chunk = assert(loadfile(rcfile))
-  local env   = setmetatable({ repl      = repl }, { __index = _G, __newindex = _G })
+  local env   = setmetatable({ repl = repl }, { __index = _G, __newindex = _G })
 
   setfenv(chunk, env)
 
