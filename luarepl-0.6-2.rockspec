@@ -1,9 +1,17 @@
+-- This file was automatically generated for the LuaDist project.
+
 package = 'luarepl'
-version = '0.6-1'
-source  = {
-    url = 'https://github.com/hoelzro/lua-repl/archive/0.6.tar.gz',
-    dir = 'lua-repl-0.6',
+version = '0.6-2'
+-- LuaDist source
+source = {
+  tag = "0.6-2",
+  url = "git://github.com/LuaDist-testing/luarepl.git"
 }
+-- Original source
+-- source  = {
+--     url = 'https://github.com/hoelzro/lua-repl/archive/0.6.tar.gz',
+--     dir = 'lua-repl-0.6',
+-- }
 description = {
   summary  = 'A reusable REPL component for Lua, written in Lua',
   homepage = 'https://github.com/hoelzro/lua-repl',
@@ -16,6 +24,7 @@ build = {
   type = 'builtin',
   modules = {
     ['repl']                                   = 'repl/init.lua',
+    ['repl.utils']                             = 'repl/utils.lua',
     ['repl.sync']                              = 'repl/sync.lua',
     ['repl.console']                           = 'repl/console.lua',
     ['repl.plugins.autoreturn']                = 'repl/plugins/autoreturn.lua',
