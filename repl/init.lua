@@ -21,7 +21,7 @@
 
 local plugins_lookup_meta = { __mode = 'k' }
 
-local repl         = { _buffer = '', _plugins = setmetatable({}, plugins_lookup_meta), _features = {}, _ifplugin = {}, _iffeature = {}, VERSION = 0.7 }
+local repl         = { _buffer = '', _plugins = setmetatable({}, plugins_lookup_meta), _features = {}, _ifplugin = {}, _iffeature = {}, VERSION = 0.8 }
 local select       = select
 local loadstring   = loadstring
 local dtraceback   = debug.traceback
@@ -329,7 +329,7 @@ end
 
 -- TODO use lua-procure for this (eventually)
 local function findchunk(name)
-  for _, loader in pairs(package.loaders) do
+  for _, loader in pairs(package.loaders or package.searchers) do
     local chunk = loader(name)
 
     if type(chunk) == 'function' then

@@ -1,16 +1,16 @@
 -- This file was automatically generated for the LuaDist project.
 
 package = 'luarepl'
-version = '0.7-1'
+version = '0.8-1'
 -- LuaDist source
 source = {
-  tag = "0.7-1",
+  tag = "0.8-1",
   url = "git://github.com/LuaDist-testing/luarepl.git"
 }
 -- Original source
 -- source  = {
---     url = 'https://github.com/hoelzro/lua-repl/archive/0.7.tar.gz',
---     dir = 'lua-repl-0.7',
+--     url = 'https://github.com/hoelzro/lua-repl/archive/0.8.tar.gz',
+--     dir = 'lua-repl-0.8',
 -- }
 description = {
   summary  = 'A reusable REPL component for Lua, written in Lua',
