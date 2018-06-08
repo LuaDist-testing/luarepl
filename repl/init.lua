@@ -1,4 +1,4 @@
--- Copyright (c) 2011-2012 Rob Hoelz <rob@hoelz.ro>
+-- Copyright (c) 2011-2013 Rob Hoelz <rob@hoelz.ro>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy of
 -- this software and associated documentation files (the "Software"), to deal in
@@ -21,10 +21,11 @@
 
 local plugins_lookup_meta = { __mode = 'k' }
 
-local repl         = { _buffer = '', _plugins = setmetatable({}, plugins_lookup_meta), _features = {}, _ifplugin = {} }
+local repl         = { _buffer = '', _plugins = setmetatable({}, plugins_lookup_meta), _features = {}, _ifplugin = {}, VERSION = 0.4 }
 local select       = select
 local loadstring   = loadstring
 local dtraceback   = debug.traceback
+local setfenv      = setfenv
 local setmetatable = setmetatable
 local sformat      = string.format
 local smatch       = string.match
@@ -48,7 +49,7 @@ end
 --- Returns the prompt for a given level.
 -- @param level The prompt level. Either 1 or 2.
 function repl:getprompt(level)
-  return level == 1 and 'lua>' or 'lua>>'
+  return level == 1 and '>' or '>>'
 end
 
 --- Displays a prompt for the given prompt level.
@@ -96,6 +97,7 @@ function repl:handleline(line)
   if f then
     self._buffer = ''
 
+    setfenv(f, self:getcontext())
     local success, results = gather_results(xpcall(f, function(...) return self:traceback(...) end))
     if success then
       self:displayresults(results)

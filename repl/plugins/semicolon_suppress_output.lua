@@ -16,31 +16,21 @@
 -- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 -- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-local repl      = require 'repl'
-local sync_repl = repl:clone()
-local error     = error
+local smatch = string.match
 
--- @class repl.sync
---- This module implements a synchronous REPL.  It provides
---- a run() method for actually running the REPL, and requires
---- that implementors implement the lines() method.
+-- XXX will this affect any other plugins?
+function around:compilechunk(orig, chunk)
+  local f, err = orig(self, chunk)
 
---- Run a REPL loop in a synchronous fashion.
--- @name repl.sync:run
-function sync_repl:run()
-  self:prompt(1)
-  for line in self:lines() do
-    local level = self:handleline(line)
-    self:prompt(level)
+  if not f then
+    return f, err
   end
-  self:shutdown()
-end
 
---- Returns an iterator that yields lines to be evaluated.
--- @name repl.sync:lines
--- @return An iterator.
-function sync_repl:lines()
-  error 'You must implement the lines method'
-end
+  if smatch(chunk, ';%s*$') then
+    return function()
+      f()
+    end
+  end
 
-return sync_repl
+  return f
+end
