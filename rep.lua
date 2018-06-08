@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 
--- Copyright (c) 2011-2012 Rob Hoelz <rob@hoelz.ro>
+-- Copyright (c) 2011-2015 Rob Hoelz <rob@hoelz.ro>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy of
 -- this software and associated documentation files (the "Software"), to deal in
@@ -26,25 +26,19 @@ local has_linenoise = pcall(require, 'linenoise')
 if has_linenoise then
   repl:loadplugin 'linenoise'
 else
-  -- XXX check that we're not receiving input from a non-tty
-  local has_rlwrap = os.execute('which rlwrap >/dev/null 2>/dev/null') == 0
-
-  if has_rlwrap and not os.getenv 'LUA_REPL_RLWRAP' then
-    local lowest_index = -1
-
-    while arg[lowest_index] ~= nil do
-      lowest_index = lowest_index - 1
-    end
-    lowest_index = lowest_index + 1
-    os.execute(string.format('LUA_REPL_RLWRAP=1 rlwrap %q %q', arg[lowest_index], arg[0]))
-    return
-  end
+  pcall(repl.loadplugin, repl, 'rlwrap')
 end
 
 repl:loadplugin 'history'
 repl:loadplugin 'completion'
 repl:loadplugin 'autoreturn'
-repl:loadplugin 'rcfile'
+local rcfile_loaded = repl:loadplugin 'rcfile'
+
+if rcfile_loaded and not repl.quiet_default_plugins then
+  print([[In Lua REPL 0.8, the default plugins will not be loaded if you have an
+rcfile at ~/.rep.lua.  Please see the README for tips on handling this and
+quieting this error message.]] .. '\n')
+end
 
 print('Lua REPL ' .. tostring(repl.VERSION))
 repl:run()

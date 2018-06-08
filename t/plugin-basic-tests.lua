@@ -1,9 +1,10 @@
+-- vim:foldmethod=marker
 local repl  = require 'repl'
 local utils = require 'test-utils'
 pcall(require, 'luarocks.loader')
 require 'Test.More'
 
-plan(21)
+plan(28)
 
 local clone = repl:clone()
 
@@ -127,7 +128,7 @@ do -- global tests {{{
   end)
 
   like(err, tostring(line_no) .. ': global environment is read%-only %(key = "foo"%)')
-end
+end -- }}}
 
 do -- ifplugin tests {{{
   local clone = repl:clone()
@@ -175,4 +176,31 @@ do -- ifplugin multiple times {{{
 
   ok(has_run)
   ok(has_run2)
+end -- }}}
+
+do -- plugin return value {{{
+  local clone = repl:clone()
+
+  local result = clone:loadplugin(function()
+    return 17
+  end)
+
+  local result2 = clone:loadplugin(function()
+  end)
+
+  local result3, result4 = clone:loadplugin(function()
+    return 18, 19
+  end)
+
+  local result5, result6, result7 = clone:loadplugin(function()
+    return 20, nil, 21
+  end)
+
+  is(result, 17)
+  is(result2, nil)
+  is(result3, 18)
+  is(result4, 19)
+  is(result5, 20)
+  is(result6, nil)
+  is(result7, 21)
 end -- }}}

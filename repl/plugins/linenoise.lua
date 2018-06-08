@@ -1,4 +1,4 @@
--- Copyright (c) 2011-2014 Rob Hoelz <rob@hoelz.ro>
+-- Copyright (c) 2011-2015 Rob Hoelz <rob@hoelz.ro>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy of
 -- this software and associated documentation files (the "Software"), to deal in
@@ -32,7 +32,7 @@ function override:lines()
   end
 end
 
-repl:ifplugin('completion', function()
+repl:iffeature('completion', function()
   ln.setcompletion(function(completions, line)
     repl:complete(line, function(completion)
       ln.addcompletion(completions, completion)

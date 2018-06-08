@@ -1,4 +1,4 @@
--- Copyright (c) 2011-2014 Rob Hoelz <rob@hoelz.ro>
+-- Copyright (c) 2011-2015 Rob Hoelz <rob@hoelz.ro>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy of
 -- this software and associated documentation files (the "Software"), to deal in
@@ -21,7 +21,7 @@
 
 local plugins_lookup_meta = { __mode = 'k' }
 
-local repl         = { _buffer = '', _plugins = setmetatable({}, plugins_lookup_meta), _features = {}, _ifplugin = {}, VERSION = 0.6 }
+local repl         = { _buffer = '', _plugins = setmetatable({}, plugins_lookup_meta), _features = {}, _ifplugin = {}, _iffeature = {}, VERSION = 0.7 }
 local select       = select
 local loadstring   = loadstring
 local dtraceback   = debug.traceback
@@ -122,9 +122,14 @@ function repl:clone()
   local plugins_copy  = tcopy(self._plugins, setmetatable({}, plugins_lookup_meta))
   local features_copy = tcopy(self._features)
   local ifplugin_copy = {}
+  local iffeature_copy = {}
 
   for k, v in pairs(self._ifplugin) do
     ifplugin_copy[k] = tcopy(v)
+  end
+
+  for k, v in pairs(self._iffeature) do
+    iffeature_copy[k] = tcopy(v)
   end
 
   return setmetatable({
@@ -132,6 +137,7 @@ function repl:clone()
     _plugins  = plugins_copy,
     _features = features_copy,
     _ifplugin = ifplugin_copy,
+    _iffeature = iffeature_copy,
   }, { __index = self })
 end
 
@@ -183,6 +189,23 @@ function repl:ifplugin(plugin, action)
     end
 
     pending_actions[#pending_actions + 1] = action
+  end
+end
+
+--- If the given feature has been loaded, call `action`.  Otherwise, if the
+-- feature is ever loaded in the future, call `action` after that loading occurs.
+function repl:iffeature(feature, action)
+  if self:hasfeature(feature) then
+    action()
+  else
+    local pending_features = self._iffeature[feature]
+
+    if not pending_features then
+      pending_features         = {}
+      self._iffeature[feature] = pending_features
+    end
+
+    pending_features[#pending_features + 1] = action
   end
 end
 
@@ -323,7 +346,7 @@ function repl:loadplugin(chunk)
   end
   self._plugins[chunk] = true
 
-  local actions         = self._ifplugin[chunk]
+  local plugin_actions  = self._ifplugin[chunk]
   self._ifplugin[chunk] = nil
 
   if type(chunk) == 'string' then
@@ -348,7 +371,7 @@ function repl:loadplugin(chunk)
   setmetatable(plugin_env, { __index = _G, __newindex = ro_globals })
 
   setfenv(chunk, plugin_env)
-  chunk()
+  local _, results = gather_results(nil, chunk())
 
   local features = plugin_env.features or {}
 
@@ -362,13 +385,23 @@ function repl:loadplugin(chunk)
     end
 
     self._features[feature] = true
+
+    local feature_actions    = self._iffeature[feature]
+    self._iffeature[feature] = nil
+    if feature_actions then
+      for _, action in ipairs(feature_actions) do
+        action()
+      end
+    end
   end
 
-  if actions then
-    for _, action in ipairs(actions) do
+  if plugin_actions then
+    for _, action in ipairs(plugin_actions) do
       action()
     end
   end
+
+  return unpack(results, 1, results.n)
 end
 
 -- XXX how to guarantee this gets called?

@@ -1,4 +1,4 @@
--- Copyright (c) 2011-2014 Rob Hoelz <rob@hoelz.ro>
+-- Copyright (c) 2011-2015 Rob Hoelz <rob@hoelz.ro>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy of
 -- this software and associated documentation files (the "Software"), to deal in
@@ -103,6 +103,7 @@ local type_order = {
   thread       = 4,
   boolean      = 5,
   ['function'] = 6,
+  cdata        = 7,
 }
 
 local function cross_type_order(a, b)

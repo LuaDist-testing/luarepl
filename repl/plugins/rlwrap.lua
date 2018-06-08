@@ -16,28 +16,22 @@
 -- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 -- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
--- A plugin that stores the results of the last evaluation in _G._
+if os.getenv 'LUA_REPL_RLWRAP' then
+  features = 'input'
+else
+  -- XXX check that we're not receiving input from a non-tty
+  local has_rlwrap = os.execute('which rlwrap >/dev/null 2>/dev/null') == 0
 
-local tostring = tostring
-
-function before:displayresults(results)
-  local context = self:getcontext()
-
-  if self._keep_eval_lastn then
-    context._ = nil
-
-    for i = 1, self._keep_eval_lastn do
-      context['_' .. tostring(i)] = nil
-    end
+  if not has_rlwrap then
+    error 'Please install rlwrap in order to use the rlwrap plugin'
   end
 
-  if results.n > 0 then
-    context._ = results[1]
+  local lowest_index = -1
 
-    for i = 1, results.n do
-      context['_' .. tostring(i)] = results[i]
-    end
-
-    self._keep_eval_lastn = results.n
+  while arg[lowest_index] ~= nil do
+    lowest_index = lowest_index - 1
   end
+  lowest_index = lowest_index + 1
+  os.execute(string.format('LUA_REPL_RLWRAP=1 rlwrap %q %q', arg[lowest_index], arg[0]))
+  os.exit(0)
 end

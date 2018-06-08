@@ -1,3 +1,4 @@
+-- vim:foldmethod=marker
 local repl = require 'repl'
 pcall(require, 'luarocks.loader')
 require 'Test.More'
@@ -23,7 +24,7 @@ function clone:displayerror(err)
   errmsg = err
 end
 
-do -- prompt tests
+do -- prompt tests {{{
   lives_ok(function()
     clone:prompt(1)
   end)
@@ -35,9 +36,9 @@ do -- prompt tests
   end)
 
   is(prompt, '>>')
-end
+end -- }}}
 
-do -- handleline tests
+do -- handleline tests {{{
   is(_G.testresult, nil)
   is(results, nil)
 
@@ -82,9 +83,9 @@ do -- handleline tests
     is(results[i], nil)
   end
   is(results[8], 2)
-end
+end -- }}}
 
-do -- error handling tests
+do -- error handling tests {{{
   lives_ok(function()
     clone:handleline '3 4'
   end)
@@ -98,9 +99,9 @@ do -- error handling tests
   end)
 
   like(errmsg, 'foo')
-end
+end -- }}}
 
-do -- multi-line input tests
+do -- multi-line input tests {{{
   errmsg = nil
   _G.t = {}
 
@@ -115,4 +116,4 @@ do -- multi-line input tests
   is(_G.t[1], 1)
   is(_G.t[2], 2)
   is(_G.t[3], 3)
-end
+end -- }}}
