@@ -21,15 +21,33 @@
 
 local plugins_lookup_meta = { __mode = 'k' }
 
-local repl         = { _buffer = '', _plugins = setmetatable({}, plugins_lookup_meta), _features = {}, _ifplugin = {}, VERSION = 0.4 }
+local repl         = { _buffer = '', _plugins = setmetatable({}, plugins_lookup_meta), _features = {}, _ifplugin = {}, VERSION = 0.5 }
 local select       = select
 local loadstring   = loadstring
 local dtraceback   = debug.traceback
-local setfenv      = setfenv
 local setmetatable = setmetatable
 local sformat      = string.format
 local smatch       = string.match
 local error        = error
+
+local setfenv = setfenv or function(f, t)
+  local upvalue_index = 1
+
+  -- XXX we may need a utility library if debug isn't available
+  while true do
+    local name = debug.getupvalue(f, upvalue_index)
+    -- some functions don't have an _ENV upvalue, because
+    -- they never refer to globals
+    if not name then
+      return
+    end
+    if name == '_ENV' then
+      debug.setupvalue(f, upvalue_index, t)
+      return
+    end
+    upvalue_index = upvalue_index + 1
+  end
+end
 
 local function gather_results(success, ...)
   local n = select('#', ...)
@@ -80,7 +98,7 @@ end
 -- @param err The compilation error from Lua.
 -- @return Whether or not the input should continue after this line.
 function repl:detectcontinue(err)
-  return smatch(err, "'<eof>'$")
+  return smatch(err, "'<eof>'$") or smatch(err, "<eof>$")
 end
 
 function repl:compilechunk(chunk)
